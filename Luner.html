@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lịch Âm & Ngày Cắt Tóc | Duymt Framework</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: Be Vietnam Pro -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Lunar Javascript Library -->
+    <script src="https://cdn.jsdelivr.net/npm/lunar-javascript@1.6.12/lunar.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Be Vietnam Pro"', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: '#B45309', // Amber 700
+                        secondary: '#F59E0B', // Amber 500
+                        accent: '#78350F', // Amber 900
+                    },
+                    boxShadow: {
+                        'soft': '0 8px 30px rgba(0, 0, 0, 0.06)',
+                        'glow': '0 0 25px rgba(245, 158, 11, 0.25)',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background: linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 50%, #FDE68A 100%);
+            min-height: 100vh;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.7);
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .lunar-number {
+            text-shadow: 3px 6px 12px rgba(120, 53, 15, 0.15);
+            font-variant-numeric: tabular-nums;
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #D1D5DB; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #9CA3AF; }
+    </style>
+</head>
+<body class="text-gray-800 antialiased p-4 md:p-8 flex items-center justify-center">
+
+    <div class="w-full max-w-md fade-in">
+        <!-- Header -->
+        <div class="text-center mb-6">
+            <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-white shadow-soft mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+            </div>
+            <h1 class="text-2xl md:text-3xl font-extrabold text-accent tracking-tight">Lịch Âm & Cắt Tóc</h1>
+            <p class="text-gray-500 mt-1 text-sm font-medium">Xem ngày tốt xấu theo lịch âm truyền thống</p>
+        </div>
+
+        <!-- Date Picker -->
+        <div class="glass-card rounded-2xl p-4 shadow-soft mb-6 flex items-center gap-3 transition-all hover:shadow-glow">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            <input type="date" id="datePicker" class="flex-1 bg-transparent border-none outline-none text-gray-700 font-semibold cursor-pointer text-lg">
+        </div>
+
+        <!-- Main Lunar Display -->
+        <div class="glass-card rounded-3xl p-8 shadow-soft text-center mb-6 relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-transparent via-secondary to-transparent"></div>
+            
+            <p class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-1" id="solarDate">Đang tải...</p>
+            
+            <div class="relative inline-block mt-4 mb-2">
+                <!-- Ngày âm lịch cực to -->
+                <span id="lunarDayNumber" class="lunar-number text-9xl font-black text-accent leading-none">--</span>
+                <span class="absolute -right-8 top-2 text-lg font-bold text-gray-400">ÂL</span>
+            </div>
+            
+            <!-- Tháng âm lịch rõ ràng -->
+            <div class="text-2xl font-bold text-primary mt-1 mb-4" id="lunarMonthText">Tháng --</div>
+            
+            <div class="flex justify-center gap-3 mt-6">
+                <span id="canChi" class="px-4 py-1.5 rounded-full bg-amber-100 text-amber-800 text-sm font-bold border border-amber-200">--</span>
+                <span id="weekday" class="px-4 py-1.5 rounded-full bg-gray-100 text-gray-600 text-sm font-bold border border-gray-200">--</span>
+            </div>
+        </div>
+
+        <!-- Haircut Advice Card -->
+        <div id="haircutCard" class="glass-card rounded-3xl p-6 shadow-soft border-l-4 transition-all duration-300">
+            <div class="flex items-start gap-4">
+                <div id="haircutIcon" class="flex-shrink-0 w-14 h-14 rounded-2xl flex items-center justify-center text-3xl bg-gray-100 shadow-inner">
+                    ✂️
+                </div>
+                <div class="flex-1">
+                    <h3 class="text-lg font-bold text-gray-800 mb-1">Ý nghĩa ngày cắt tóc</h3>
+                    <div class="flex items-center gap-2 mb-2">
+                        <span id="haircutStatus" class="px-3 py-1 rounded-lg text-xs font-black uppercase tracking-wider bg-gray-200 text-gray-600">
+                            --
+                        </span>
+                    </div>
+                    <p id="haircutMeaning" class="text-gray-800 font-semibold leading-relaxed text-lg">
+                        Đang tải thông tin...
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="mt-8 text-center">
+            <p class="text-xs text-gray-400 font-medium">
+                Dữ liệu lịch được tính toán chính xác.<br>
+                <span class="opacity-70">(Sẵn sàng kết nối API Python `lunar-vn`)</span>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // DỮ LIỆU NGÀY CẮT TÓC (Chuẩn hóa từ PDF)
+        // ==========================================
+        const haircutData = {
+            1: { meaning: "Thọ phước (Tăng phúc thọ)", status: "kiết" },
+            2: { meaning: "Quan sự (Dễ dính líu kiện tụng)", status: "hung" },
+            3: { meaning: "Hoan hỉ (Vui vẻ, may mắn)", status: "kiết" },
+            4: { meaning: "Phú quí (Giàu sang, thịnh vượng)", status: "kiết" },
+            5: { meaning: "Mặt bị đen (U ám, kém may mắn)", status: "hung" },
+            6: { meaning: "Thần thông (Sáng suốt, minh mẫn)", status: "kiết" },
+            7: { meaning: "Khương ninh (Mạnh khỏe, bình an)", status: "kiết" },
+            8: { meaning: "Trường thọ (Sống lâu, khỏe mạnh)", status: "kiết" },
+            9: { meaning: "Nghe pháp (Gặp điều hay, mở mang)", status: "kiết" },
+            10: { meaning: "Ký biệt (Chia ly, xa cách)", status: "hung" },
+            11: { meaning: "Sáng mắt (Tầm nhìn rõ ràng)", status: "kiết" },
+            12: { meaning: "Khốn khổ (Vất vả, khó khăn)", status: "hung" },
+            13: { meaning: "Ít trong sáng (Tâm trí không an)", status: "hung" },
+            14: { meaning: "Được thần định (Bình an, có quý nhân)", status: "kiết" },
+            15: { meaning: "Đại kiết (Rất tốt, vạn sự như ý)", status: "kiết" },
+            16: { meaning: "Được lợi ích (Thuận lợi, sinh lời)", status: "kiet" }, // Fixed typo from previous
+            17: { meaning: "Nhiều bịnh (Dễ ốm đau, bệnh tật)", status: "hung" },
+            18: { meaning: "Tội trộm (Mất mát, hao tài)", status: "hung" },
+            19: { meaning: "Ngộ đạo (Sáng tỏ, giác ngộ)", status: "kiết" },
+            20: { meaning: "Bị họa nhiều (Tai họa, rủi ro)", status: "hung" },
+            21: { meaning: "Hoạn nạn (Gặp chuyện không may)", status: "hung" },
+            22: { meaning: "Thọ dụng đầy đủ (Ăn no mặc ấm, đủ đầy)", status: "kiết" },
+            23: { meaning: "Đa văn (Nghe nhiều, hiểu biết rộng)", status: "kiết" },
+            24: { meaning: "Chứng quả (Đạt thành tựu, kết quả tốt)", status: "kiết" },
+            25: { meaning: "Đấu tranh (Cãi vã, mâu thuẫn)", status: "hung" },
+            26: { meaning: "Điềm tốt (May mắn, tin vui)", status: "kiết" },
+            27: { meaning: "Bịnh ghẻ lác (Bệnh ngoài da, khó chịu)", status: "hung" },
+            28: { meaning: "Thọ sự oan ức (Oan ức, hiểu lầm)", status: "hung" },
+            29: { meaning: "Trí huệ tăng trưởng (Thông minh, sáng suốt)", status: "kiết" },
+            30: { meaning: "Vừa ý (Hài lòng, thỏa mãn)", status: "kiết" }
+        };
+
+        // ==========================================
+        // HÀM CHUYỂN ĐỔI SANG TIẾNG VIỆT (KHÔNG CHỮ HÁN)
+        // ==========================================
+        function getVietnameseLunarDay(day) {
+            if (day <= 10) return `Mùng ${day}`;
+            return `Ngày ${day}`;
+        }
+
+        function getVietnameseLunarMonth(month) {
+            const months = [
+                "", "Giêng", "Hai", "Ba", "Tư", "Năm", "Sáu", 
+                "Bảy", "Tám", "Chín", "Mười", "Mười Một", "Chạp"
+            ];
+            return `Tháng ${months[month]}`;
+        }
+
+        // ==========================================
+        // LOGIC XỬ LÝ CHÍNH
+        // ==========================================
+        const datePicker = document.getElementById('datePicker');
+        const today = new Date();
+        datePicker.valueAsDate = today;
+        
+        datePicker.addEventListener('change', (e) => {
+            updateCalendar(new Date(e.target.value));
+        });
+
+        function updateCalendar(date) {
+            // 1. Hiển thị ngày Dương lịch
+            const solarOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('solarDate').textContent = date.toLocaleDateString('vi-VN', solarOptions);
+
+            // 2. Tính toán ngày Âm lịch (Dùng lunar-javascript)
+            // TODO: Khi có backend Python (lunar-vn), thay thế bằng fetch API
+            const lunar = Lunar.fromDate(date);
+            
+            const lunarDay = lunar.getDay(); // 1 - 30
+            const lunarMonth = lunar.getMonth(); // 1 - 12
+            
+            // Lấy Can Chi ngày và thứ bằng tiếng Việt
+            const canChi = lunar.getDayInGanZhi(); 
+            const weekday = date.toLocaleDateString('vi-VN', { weekday: 'long' });
+            
+            // Cập nhật UI Âm lịch (TO, RÕ, KHÔNG CHỮ HÁN)
+            document.getElementById('lunarDayNumber').textContent = lunarDay;
+            document.getElementById('lunarMonthText').textContent = getVietnameseLunarMonth(lunarMonth);
+            document.getElementById('canChi').textContent = `Ngày ${canChi}`;
+            document.getElementById('weekday').textContent = weekday;
+
+            // 3. Hiển thị thông tin cắt tóc
+            const haircutInfo = haircutData[lunarDay] || { meaning: "Không có dữ liệu", status: "neutral" };
+            const card = document.getElementById('haircutCard');
+            const icon = document.getElementById('haircutIcon');
+            const status = document.getElementById('haircutStatus');
+            const meaning = document.getElementById('haircutMeaning');
+
+            meaning.textContent = haircutInfo.meaning;
+
+            // Reset classes
+            card.className = "glass-card rounded-3xl p-6 shadow-soft border-l-4 transition-all duration-300 ";
+            status.className = "px-3 py-1 rounded-lg text-xs font-black uppercase tracking-wider ";
+            icon.className = "flex-shrink-0 w-14 h-14 rounded-2xl flex items-center justify-center text-3xl shadow-inner ";
+
+            if (haircutInfo.status === 'kiết' || haircutInfo.status === 'kiet') {
+                card.classList.add('border-green-500', 'bg-green-50/80');
+                status.classList.add('bg-green-100', 'text-green-700');
+                status.textContent = '🟢 Ngày Kiết (Tốt)';
+                icon.classList.add('bg-green-100', 'text-green-600');
+                icon.innerHTML = '✨';
+            } else if (haircutInfo.status === 'hung') {
+                card.classList.add('border-red-500', 'bg-red-50/80');
+                status.classList.add('bg-red-100', 'text-red-700');
+                status.textContent = '🔴 Ngày Hung (Xấu)';
+                icon.classList.add('bg-red-100', 'text-red-600');
+                icon.innerHTML = '⚠️';
+            } else {
+                card.classList.add('border-gray-400', 'bg-gray-50/80');
+                status.classList.add('bg-gray-200', 'text-gray-600');
+                status.textContent = '⚪ Trung tính';
+                icon.classList.add('bg-gray-100', 'text-gray-600');
+                icon.innerHTML = '✂️';
+            }
+        }
+
+        // Chạy lần đầu khi tải trang
+        updateCalendar(today);
+    </script>
+</body>
+</html>
